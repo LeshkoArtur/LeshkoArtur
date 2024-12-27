@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Погода на сьогодні</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                color: #333;
+            }
+
+            .container {
+                max-width: 800px;
+                margin: 20px auto;
+                padding: 20px;
+                background-color: #fff;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .weather-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                color: #007bff;
+            }
+
+            .search-container {
+                display: flex;
+                align-items: center;
+            }
+
+            .search-input {
+                padding: 8px;
+                border-radius: 5px 0 0 5px;
+                border: 1px solid #ccc;
+                margin-right: 5px;
+            }
+
+            .search-button {
+                padding: 8px 15px;
+                border-radius: 0 5px 5px 0;
+                background-color: #007bff;
+                color: #fff;
+                border: 1px solid #007bff;
+                cursor: pointer;
+            }
+
+            .current-weather-container {
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .current-weather-icon {
+                display: inline-block;
+                margin-bottom: 10px;
+            }
+
+            .current-temperature {
+                font-size: 36px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #007bff;
+            }
+
+            .weather-details {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .hourly-weather-container {
+                padding: 20px;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .hourly-weather-day {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 10px;
+                color: #007bff;
+            }
+
+            .hourly-weather-icon {
+                display: inline-block;
+                margin-bottom: 5px;
+            }
+
+            .hourly-weather-details {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+            }
+
+            .hourly-weather-time {
+                flex-basis: 20%;
+            }
+
+            .forecast-buttons {
+                display: flex;
+                gap: 10px;
+            }
+
+            .forecast-button {
+                padding: 8px 15px;
+                border-radius: 5px;
+                background-color: #007bff;
+                color: #fff;
+                border: 1px solid #007bff;
+                cursor: pointer;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 10px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+                border: 1px solid #fff;
+            }
+
+            th {
+                background-color: #007bff;
+                color: #fff;
+            }
+
+            td {
+                background-color: #fff;
+                color: #333;
+            }
+
+            .five-day-container {
+                display: flex;
+                gap: 10px;
+                overflow-x: auto;
+                margin-bottom: 20px;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+
+            .hourly-weather-container {
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                padding: 10px;
+                text-align: center;
+            }
+
+            .hourly-weather-container.active {
+                border: 2px solid #007bff;
+            }
+
+            .forecast-buttons {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 10px;
+            }
+
+            .forecast-button {
+                padding: 8px 15px;
+                border-radius: 5px;
+                background-color: #007bff;
+                color: #fff;
+                border: 1px solid #007bff;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <div class="weather-header">
+                <div>
+                    <h2>CURRENT WEATHER</h2>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="cityInput" class="search-input" placeholder="Введіть назву міста">
+                    <button onclick="getWeather()" class="search-button">Search</button>
+                </div>
+            </div>
+            <div class="forecast-buttons">
+                <button onclick="getTodayForecast()" class="forecast-button">Today</button>
+                <button onclick="getFiveDayForecast()" class="forecast-button">5-day Forecast</button>
+            </div>
+            <div class="five-day-container" id="fiveDayContainer"></div>
+            <div id="currentWeather" class="current-weather-container" style="display: none;">
+                <span id="date"></span>
+                <div class="current-weather-icon">
+                    <img src="" alt="Weather Icon" id="weatherIcon">
+                </div>
+                <div class="current-temperature" id="currentTemp"></div>
+                <div class="weather-details">
+                    <div>
+                        <p id="description"></p>
+                        <p>Мін: <span id="minTemp"></span> °C</p>
+                        <p>Макс: <span id="maxTemp"></span> °C</p>
+                    </div>
+                    <div>
+                        <p>Швидкість вітру: <span id="windSpeed"></span> м/с</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="hourlyWeather" class="hourly-weather-container" style="display: none;">
+                <div class="hourly-weather-day" id="hourlyDay">Hourly</div>
+                <div id="hourlyForecastTable"></div>
+            </div>
+            <div id="nearestCitiesWeather" class="nearest-cities-weather-container" style="display: none;">
+                <div class="nearest-cities-header">
+                    <h2>NEARBY PLACES</h2>
+                </div>
+                <div class="city-weather" id="uzhgorodWeather">
+                    <h3>Uzhhorod</h3>
+                    <div class="weather-info">
+                        <img src="" alt="Weather Icon" class="city-weather-icon" id="uzhgorodIcon">
+                        <span class="city-temperature" id="uzhgorodTemp"></span>
+                    </div>
+                </div>
+                <div class="city-weather" id="lvivWeather">
+                    <h3>Lviv</h3>
+                    <div class="weather-info">
+                        <img src="" alt="Weather Icon" class="city-weather-icon" id="lvivIcon">
+                        <span class="city-temperature" id="lvivTemp"></span>
+                    </div>
+                </div>
+                <div class="city-weather" id="chustWeather">
+                    <h3>Chust</h3>
+                    <div class="weather-info">
+                        <img src="" alt="Weather Icon" class="city-weather-icon" id="chustIcon">
+                        <span class="city-temperature" id="chustTemp"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="error" class="error" style="display: none;">City not found</div>
+
+
+        </div>
+
+        <script>
+            function resetForecastViews() {
+                document.getElementById('currentWeather').style.display = 'none';
+                document.getElementById('hourlyWeather').style.display = 'none';
+                document.getElementById('fiveDayContainer').style.display = 'none';
+            }
+
+            function getNearestCitiesWeather() {
+                const cities = ['Uzhhorod', 'Lviv', 'Chust'];
+                const apiKey = 'bf91c987f31a99d1dbae9717e653e0e2';
+
+                cities.forEach(city => {
+                    const apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+                    fetch(apiUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('City not found');
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            const cityId = city.toLowerCase();
+                            document.getElementById(`${cityId}Icon`).src = `https://openweathermap.org/img/w/${data.weather[0].icon}.png`;
+                            document.getElementById(`${cityId}Temp`).textContent = `${data.main.temp} °C`;
+                        })
+                        .catch(error => {
+                            console.error(`Error fetching weather for ${city}:`, error);
+                        });
+                });
+
+                document.getElementById('nearestCitiesWeather').style.display = 'block';
+            }
+            function getTodayForecast() {
+                resetForecastViews();
+                const cityInput = document.getElementById('cityInput').value;
+                const apiKey = 'bf91c987f31a99d1dbae9717e653e0e2';
+                const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityInput}&appid=${apiKey}&units=metric`;
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('City not found');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        const today = new Date();
+                        const todayDate = today.toISOString().split('T')[0];
+                        const todayForecast = data.list.find(forecast => forecast.dt_txt.includes(todayDate));
+
+                        if (todayForecast) {
+                            document.getElementById('error').style.display = 'none';
+                            document.getElementById('currentWeather').style.display = 'block';
+
+                            document.getElementById('date').textContent = today.toDateString();
+                            document.getElementById('weatherIcon').src = `https://openweathermap.org/img/w/${todayForecast.weather[0].icon}.png`;
+                            document.getElementById('currentTemp').textContent = todayForecast.main.temp + " °C";
+                            document.getElementById('description').textContent = todayForecast.weather[0].description;
+                            document.getElementById('minTemp').textContent = todayForecast.main.temp_min;
+                            document.getElementById('maxTemp').textContent = todayForecast.main.temp_max;
+                            document.getElementById('windSpeed').textContent = todayForecast.wind.speed;
+                        } else {
+                            throw new Error('Today\'s forecast not available');
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('error').style.display = 'block';
+                        document.getElementById('currentWeather').style.display = 'none';
+                        document.getElementById('hourlyWeather').style.display = 'none';
+                    });
+
+                const hourlyForecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityInput}&appid=${apiKey}&units=metric`;
+                fetch(hourlyForecastUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const hourlyData = data.list.slice(0, 5);
+                        const hourlyForecastTable = document.createElement('table');
+                        hourlyForecastTable.innerHTML = '<tr><th>Time</th><th>Description</th><th>Temperature</th><th>Wind Speed</th><th>Weather Icon</th></tr>';
+
+                        hourlyData.forEach(hour => {
+                            const hourTime = new Date(hour.dt * 1000).toLocaleTimeString();
+                            const iconUrl = `https://openweathermap.org/img/w/${hour.weather[0].icon}.png`;
+
+                            const row = `<tr><td>${hourTime}</td><td>${hour.weather[0].description}</td><td>${hour.main.temp} °C</td><td>${hour.wind.speed} m/s</td><td><img src="${iconUrl}" alt="Weather Icon" class="hourly-weather-icon"></td></tr>`;
+                            hourlyForecastTable.innerHTML += row;
+                        });
+
+                        document.getElementById('hourlyForecastTable').innerHTML = '';
+                        document.getElementById('hourlyForecastTable').appendChild(hourlyForecastTable);
+                        document.getElementById('hourlyWeather').style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching hourly forecast:', error);
+                    });
+                getNearestCitiesWeather();
+            }
+
+            function getFiveDayForecast() {
+                resetForecastViews();
+                const cityInput = document.getElementById('cityInput').value;
+                const apiKey = 'bf91c987f31a99d1dbae9717e653e0e2';
+                const apiUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${cityInput}&appid=${apiKey}&units=metric`;
+
+                fetch(apiUrl)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('City not found');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        document.getElementById('error').style.display = 'none';
+                        const dailyForecasts = data.list.filter(forecast => forecast.dt_txt.includes('12:00:00'));
+                        const fiveDayContainer = document.getElementById('fiveDayContainer');
+                        fiveDayContainer.innerHTML = '';
+
+                        dailyForecasts.forEach(forecast => {
+                            const dayContainer = document.createElement('div');
+                            dayContainer.classList.add('hourly-weather-container');
+                            const dayName = new Date(forecast.dt * 1000).toLocaleDateString('en-US', { weekday: 'long' });
+                            const iconUrl = `https://openweathermap.org/img/w/${forecast.weather[0].icon}.png`;
+
+                            dayContainer.innerHTML = `
+                    <div class="hourly-weather-day">${dayName}</div>
+                    <div class="hourly-weather-icon">
+                        <img src="${iconUrl}" alt="Weather Icon">
+                    </div>
+                    <div class="current-temperature">${forecast.main.temp} °C</div>
+                    <div class="weather-details">
+                        <div>${forecast.weather[0].description}</div>
+                    </div>
+                `;
+
+                            dayContainer.addEventListener('click', function () {
+                                const date = forecast.dt_txt.split(' ')[0];
+                                getHourlyForecast(cityInput, date);
+                                const allContainers = document.querySelectorAll('.hourly-weather-container');
+                                allContainers.forEach(container => container.classList.remove('active'));
+                                dayContainer.classList.add('active');
+                            });
+
+                            fiveDayContainer.appendChild(dayContainer);
+                        });
+
+                        if (dailyForecasts.length > 0) {
+                            const firstDay = dailyForecasts[0];
+                            const date = firstDay.dt_txt.split(' ')[0];
+                            getHourlyForecast(cityInput, date);
+                            const firstDayContainer = fiveDayContainer.children[0];
+                            firstDayContainer.classList.add('active');
+                        }
+
+                        fiveDayContainer.style.display = 'flex';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching 5-day forecast:', error);
+                        document.getElementById('error').style.display = 'block';
+                    });
+            }
+
+
+
+            function getHourlyForecast(city, day) {
+                const apiKey = 'bf91c987f31a99d1dbae9717e653e0e2';
+                const hourlyForecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`;
+
+                fetch(hourlyForecastUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        const hourlyData = data.list.filter(hour => hour.dt_txt.includes(day));
+                        const hourlyForecastTable = document.createElement('table');
+                        hourlyForecastTable.innerHTML = '<tr><th>Time</th><th>Description</th><th>Temperature</th><th>Wind Speed</th><th>Weather Icon</th></tr>';
+
+                        hourlyData.forEach(hour => {
+                            const hourTime = new Date(hour.dt * 1000).toLocaleTimeString();
+                            const iconUrl = `https://openweathermap.org/img/w/${hour.weather[0].icon}.png`;
+
+                            const row = `<tr><td>${hourTime}</td><td>${hour.weather[0].description}</td><td>${hour.main.temp} °C</td><td>${hour.wind.speed} m/s</td><td><img src="${iconUrl}" alt="Weather Icon" class="hourly-weather-icon"></td></tr>`;
+                            hourlyForecastTable.innerHTML += row;
+                        });
+                        document.getElementById('hourlyForecastTable').innerHTML = '';
+                        document.getElementById('hourlyForecastTable').appendChild(hourlyForecastTable);
+                        document.getElementById('hourlyWeather').style.display = 'block';
+                    })
+                    .catch(error => {
+                        console.error('Error fetching hourly forecast:', error);
+                    });
+            }
+
+        </script>
+    </body>
+
+</html>
